@@ -1,0 +1,27 @@
+{
+  "name": "@wesleytodd/signed-append-only-log",
+  "version": "1.0.0",
+  "description": "Append only log with signed entries and verifiable integrity",
+  "main": "index.js",
+  "scripts": {
+    "test": "happiness && mocha",
+    "prepublishOnly": "npm test",
+    "postpublish": "git push && git push --tags"
+  },
+  "keywords": [
+    "aol",
+    "append only log",
+    "hash chain"
+  ],
+  "author": "Wes <wes@wesleytodd.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "happiness": "^10.0.2",
+    "mocha": "^3.5.0"
+  },
+  "dependencies": {
+    "ed25519-supercop": "^1.0.2",
+    "inherits": "^2.0.3",
+    "readable-stream": "^2.3.3"
+  }
+}
