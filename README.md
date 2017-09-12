@@ -1,8 +1,7 @@
 # Signed Append Only Log
 
-[![NPM Version](https://img.shields.io/npm/v/@wesleytodd/saol.svg)](https://npmjs.org/package/@wesleytodd/saol)
-[![NPM Downloads](https://img.shields.io/npm/dm/@wesleytodd/saol.svg)](https://npmjs.org/package/@wesleytodd/saol)
-
+[![NPM Version](https://img.shields.io/npm/v/@wesleytodd/signed-append-only-log.svg)](https://npmjs.org/package/@wesleytodd/signed-append-only-log)
+[![NPM Downloads](https://img.shields.io/npm/dm/@wesleytodd/signed-append-only-log.svg)](https://npmjs.org/package/@wesleytodd/signed-append-only-log)
 [![js-happiness-style](https://img.shields.io/badge/code%20style-happiness-brightgreen.svg)](https://github.com/JedWatson/happiness)
 
 An append only log with content hashes and signatures for verification and integrity checking.
@@ -20,8 +19,11 @@ var createLog = require('@wesleytodd/signed-append-only-log');
 
 // Create a log instance
 var log = createLog({
-  store: store, // See section on stores
-  signatory: signatory // See section on signatories
+  // Optional, see section on stores
+  store: store,
+
+  // Optional, see section on signatories
+  signatory: signatory
 });
 
 // Write a log
@@ -94,6 +96,12 @@ log.verify(function (err, valid) {
 });
 
 ```
+
+## Signatories
+
+A signatory has is a just a interface around cryptographically signing a piece of content.  A valid signatory
+has two methods `sign` and `verify`.  Sign is used to generate a signature, and verify to validate that
+signatures authenticity.
 
 ## Development
 
