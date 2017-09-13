@@ -3,12 +3,16 @@ const assert = require('assert');
 const mockLog = require('./util/mock-log');
 
 describe('log', function () {
-	it('should write and increment sequence', function (done) {
+	it('should write and get logs', function (done) {
 		mockLog(['foo'], function (log) {
-			log.sequence(function (err, seq) {
+			log.head(function (err, head) {
 				assert(!err);
-				assert.equal(seq, 1);
-				done();
+				log.get(head, function (err, entry) {
+					assert(!err);
+					assert.equal(entry.content.payload.toString('utf8'), 'foo');
+					assert.equal(entry.prev, null);
+					done();
+				});
 			});
 		});
 	});
@@ -21,9 +25,9 @@ describe('log', function () {
 				.on('data', function ({key, value}) {
 					assert(key);
 					assert(value);
-					assert(value.data.equals(seq === 2 ? Buffer.from('foo') : Buffer.from('bar')));
-					assert.equal(value.sequence, seq--);
+					assert(value.content.payload.equals(seq === 2 ? Buffer.from('foo') : Buffer.from('bar')));
 					next && assert.equal(next, key);
+					seq--;
 					next = value.prev;
 				})
 				.on('error', function (err) {
@@ -43,7 +47,7 @@ describe('log', function () {
 				.on('data', function ({key, value}) {
 					assert(key);
 					assert(value);
-					assert(value.data.equals(Buffer.from(d[seq - 1])), seq + ' ' + value.data.toString('utf8'));
+					assert(value.content.payload.equals(Buffer.from(d[seq - 1])), seq + ' ' + value.content.payload.toString('utf8'));
 					seq--;
 				})
 				.on('error', function (err) {

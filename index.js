@@ -1,44 +1,25 @@
 'use strict';
-const Store = require('./lib/memory-store');
-const Signatory = require('./lib/signatory');
-const push = require('./lib/push');
-const verify = require('./lib/verify');
+const Log = require('./log');
+const MemoryStore = require('./lib/stores/memory');
+const Ed25519Sig = require('./lib/signatories/ed25519');
+const errors = require('./lib/errors');
+const createEntry = require('./lib/entry');
 
-module.exports = function createAppendOnlyLog (opts = {}) {
-	// Create the store
-	var store = opts.store || new Store();
+module.exports = {
+	createEntry: createEntry,
+	createLog: function (store, signatories) {
+		return Log({
+			store: store || new MemoryStore(),
+			signatories: signatories || [Ed25519Sig]
+		});
+	},
 
-	// Create signatory
-	var signatory = opts.signatory || new Signatory();
-
-	return {
-		sequence: function (cb) {
-			store.sequence(cb);
-		},
-
-		write: function (content, cb) {
-			// Ensure its a buffer
-			var buf = (!Buffer.isBuffer(content)) ? Buffer.from(content) : content;
-
-			// Write it to the log
-			push(buf, store, signatory, cb);
-		},
-
-		get: function (hash, cb) {
-			return store.get(hash, cb);
-		},
-
-		createReadStream: function (opts) {
-			return store.createReadStream(opts);
-		},
-
-		verify: function (cb) {
-			return verify(store, signatory, cb);
-		},
-
-		E_TIMESTAMP_ORDER: verify.E_TIMESTAMP_ORDER,
-		E_PREV_HASH: verify.E_PREV_HASH,
-		E_INVALID_HASH: verify.E_INVALID_HASH,
-		E_INVALID_SIG: verify.E_INVALID_SIG
-	};
+	E_NO_SIGNATORY: errors.E_NO_SIGNATORY,
+	E_NO_PUB_KEY: errors.E_NO_PUB_KEY,
+	E_NO_PRV_KEY: errors.E_NO_PRV_KEY,
+	E_WRONG_HEAD: errors.E_WRONG_HEAD,
+	E_PREV_HASH: errors.E_PREV_HASH,
+	E_INVALID_HASH: errors.E_INVALID_HASH,
+	E_INVALID_SIG: errors.E_INVALID_SIG,
+	E_MISSING_ENTRY: errors.E_MISSING_ENTRY
 };
