@@ -3,15 +3,27 @@ const Log = require('./log');
 const MemoryStore = require('./lib/stores/memory');
 const Ed25519Sig = require('./lib/signatories/ed25519');
 const errors = require('./lib/errors');
-const createEntry = require('./lib/entry');
+const {EntryContent, Entry} = require('./lib/entry');
 
 module.exports = {
-	createEntry: createEntry,
-	createLog: function (store, signatories) {
-		return Log({
-			store: store || new MemoryStore(),
-			signatories: signatories || [Ed25519Sig]
+	createEntry: function createEntry (payload, prev, signatory, cb) {
+		var ec = new EntryContent(payload, prev, signatory.publicKey);
+		signatory.sign(ec.toBuffer(), function (err, signature) {
+			if (err) {
+				return cb(err);
+			}
+			cb(null, new Entry(ec, signature, signatory.type));
 		});
+	},
+	createLog: function createLog ({store, signatories}, cb) {
+		// Defaults
+		signatories = signatories || [Ed25519Sig];
+		store = store || new MemoryStore();
+		var log = Log({
+			store: store,
+			signatories: signatories
+		});
+		return (typeof cb === 'function') ? process.nextTick(cb, null, log) : log;
 	},
 
 	E_NO_SIGNATORY: errors.E_NO_SIGNATORY,

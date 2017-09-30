@@ -11,7 +11,9 @@ module.exports = function mockLog (items, opts, done) {
 		opts = {};
 	}
 
-	var log = createLog(opts.store || new MemoryStore(), [Ed25519Sig]);
+	var log = createLog({
+		store: opts.store || new MemoryStore()
+	});
 
 	// Generate a keypair for the signatory to write with
 	Ed25519Sig.generateKeypair(function (err, keypair) {
