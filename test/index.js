@@ -1,8 +1,49 @@
-/* global describe, it */
+/* global describe, it, before */
 const assert = require('assert');
-const mockLog = require('./util/mock-log');
+const createSignatory = require('./util/create-signatory');
+const createEntries = require('./util/create-entries');
+const createLog = require('./util/create-log');
+const {hashEntry} = require('../lib/entry');
 
 describe('log', function () {
+	var sig;
+	before(function (done) {
+		createSignatory(function (s) {
+			sig = s;
+			done();
+		});
+	});
+
+	it('should create entries', function (done) {
+		createEntries(['foo', 'bar'], sig, function (entries) {
+			// console.log(JSON.stringify(entries, null, '\t'));
+			// Entry 1
+			var e1 = entries[0];
+			assert.equal(e1.content.payload.toString(), 'foo');
+			assert.equal(e1.content.prev, null);
+			assert.equal(e1.signatureType, 'ed25519');
+
+			// Entry 2
+			var e2 = entries[1];
+			assert.equal(e2.content.payload.toString(), 'bar');
+			assert.equal(e2.content.prev.toString('hex'), hashEntry(e1).toString('hex'));
+			assert.equal(e2.signatureType, 'ed25519');
+
+			done();
+		});
+	});
+
+	it('should write and get entries', function (done) {
+		createLog(['foo', 'bar', 'baz'], sig, function (log, entries) {
+			log.get(hashEntry(entries[0]), function (err, e) {
+				assert(!err);
+				console.log(e);
+				done();
+			});
+		});
+	});
+
+	/*
 	it('should write and get logs', function (done) {
 		mockLog(['foo'], function (log) {
 			log.head(function (err, head) {
@@ -56,4 +97,5 @@ describe('log', function () {
 				.on('end', done);
 		});
 	});
+	*/
 });

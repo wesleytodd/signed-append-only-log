@@ -1,48 +1,46 @@
 /* global describe, it, beforeEach, afterEach */
 const assert = require('assert');
-const path = require('path');
-const mkdirp = require('mkdirp');
-const rimraf = require('rimraf');
 const series = require('run-series');
-const LevelStore = require('../lib/stores/level');
-const Ed25519Sig = require('../lib/signatories/ed25519');
+const memdown = require('memdown');
 const {createEntry} = require('../');
 const {hashEntry} = require('../lib/entry');
+const LevelStore = require('../lib/stores/level');
+const createSignatory = require('./util/create-signatory');
 const createEntries = require('./util/create-entries');
 const debugLevel = require('./util/debug-level');
-const TMP = path.join(__dirname, 'tmp');
 
-describe.only('LevelStore', function () {
+describe('LevelStore', function () {
 	// Create a signatory and store for each test
 	var sig;
 	var store;
 	beforeEach(function (done) {
-		mkdirp.sync(TMP);
-
 		// Generate a keypair for the signatory to write with
-		Ed25519Sig.generateKeypair(function (err, keypair) {
-			assert(!err);
-
-			// Create signatory to sign with
-			sig = new Ed25519Sig(keypair.publicKey, keypair.privateKey);
-
+		createSignatory(function (si) {
+			sig = si;
 			LevelStore({
-				location: path.join(TMP, 'db')
-			}, function (err, s) {
+				location: 'test',
+				db: memdown
+			}, function (err, st) {
 				assert(!err);
-				store = s;
+				store = st;
 				done();
 			});
 		});
 	});
 	afterEach(function (done) {
-		debugLevel(store.db, function () {
+		if (process.env.DEBUG) {
+			debugLevel(store.db, function () {
+				store.close(function (err) {
+					assert(!err);
+					done();
+				});
+			});
+		} else {
 			store.close(function (err) {
 				assert(!err);
-				rimraf.sync(TMP);
 				done();
 			});
-		});
+		}
 	});
 
 	it('should write and get the initial block', function (done) {

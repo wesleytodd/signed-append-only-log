@@ -7,7 +7,7 @@ module.exports = function createEntries (items, sig, cb) {
 	var entries = [];
 	var head = null;
 	function create (i) {
-		if (i < 0) {
+		if (i === items.length) {
 			return cb(entries);
 		}
 
@@ -15,9 +15,9 @@ module.exports = function createEntries (items, sig, cb) {
 			assert(!err, err);
 			head = hashEntry(entry);
 			entries.push(entry);
-			create(--i);
+			create(++i);
 		});
 	}
 
-	create(items.length - 1);
+	create(0);
 };

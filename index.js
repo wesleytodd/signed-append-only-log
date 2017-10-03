@@ -1,6 +1,6 @@
 'use strict';
 const Log = require('./log');
-const MemoryStore = require('./lib/stores/memory');
+const LevelStore = require('./lib/stores/level');
 const Ed25519Sig = require('./lib/signatories/ed25519');
 const errors = require('./lib/errors');
 const {EntryContent, Entry} = require('./lib/entry');
@@ -15,10 +15,11 @@ module.exports = {
 			cb(null, new Entry(ec, signature, signatory.type));
 		});
 	},
-	createLog: function createLog ({store, signatories}, cb) {
+	createLog: function createLog (opts = {}, cb) {
 		// Defaults
+		var {store, signatories} = opts;
 		signatories = signatories || [Ed25519Sig];
-		store = store || new MemoryStore();
+		store = store || new LevelStore();
 		var log = Log({
 			store: store,
 			signatories: signatories

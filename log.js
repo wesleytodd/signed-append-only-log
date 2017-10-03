@@ -3,16 +3,22 @@ const verify = require('./lib/verify');
 const write = require('./lib/write');
 const errors = require('./lib/errors');
 
-module.exports = function createLog ({store, signatories}) {
-	// Turn signatories into an object by type
+module.exports = createLog;
+function createLog (opts, cb) {
+	var {store, signatories} = opts;
+
+	// Store is required
+	if (!store) {
+		throw new TypeError('store is required');
+	}
+
+	// Turn signatories array into an object by type
 	var sig = (signatories || []).reduce(function (s, Signatory) {
 		s[Signatory.type] = Signatory;
 		return s;
 	}, {});
 
 	return {
-		store: store,
-		signatories: signatories,
 		head: function (cb) {
 			return store.head(cb);
 		},
@@ -37,4 +43,4 @@ module.exports = function createLog ({store, signatories}) {
 			return verify(store, sig, cb);
 		}
 	};
-};
+}

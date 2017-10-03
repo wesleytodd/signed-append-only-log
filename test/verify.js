@@ -1,4 +1,5 @@
-/* global describe, it */
+/*
+/* global describe, it
 const assert = require('assert');
 const crypto = require('crypto');
 const mockLog = require('./util/mock-log');
@@ -81,3 +82,4 @@ describe('verification', function () {
 		});
 	});
 });
+*/
